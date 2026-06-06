@@ -9,7 +9,6 @@ import json
 import smtplib
 import requests
 import feedparser
-import google.generativeai as genai
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -22,9 +21,9 @@ from datetime import datetime
 # o Termo do Dia, a Dica Técnica e o Cenário Econômico.
 
 def gerar_conteudo_ia():
-    # Pega a chave secreta do Gemini guardada no GitHub
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    from google import genai as google_genai
+
+    client = google_genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     # Instruções para a IA — diz exatamente o que ela deve gerar
     prompt = """Você é um especialista em seguros de vida coletivo PJ no Brasil, com profundo conhecimento técnico, regulatório e de mercado.
@@ -51,8 +50,17 @@ Formato exigido:
   }
 }"""
 
-    resposta = model.generate_content(prompt)
-    return json.loads(resposta.text)
+    resposta = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+    texto = resposta.text.strip()
+    # Remove blocos de markdown caso a IA os inclua por engano
+    if texto.startswith("```"):
+        texto = texto.split("```")[1]
+        if texto.startswith("json"):
+            texto = texto[4:]
+    return json.loads(texto.strip())
 
 
 # =============================================================
