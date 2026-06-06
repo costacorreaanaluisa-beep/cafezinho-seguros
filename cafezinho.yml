@@ -1,0 +1,40 @@
+# Este arquivo é a "agenda" do robô.
+# Ele diz ao GitHub: "Todo dia às 10h UTC (7h de Brasília), execute o script.py."
+
+name: Cafezinho do Seguro
+
+on:
+  # Agendamento automático — cron usa o fuso UTC
+  # "0 10 * * *" significa: minuto 0, hora 10, todo dia, todo mês, todo dia da semana
+  schedule:
+    - cron: "0 10 * * *"
+
+  # Permite rodar manualmente para testar (botão "Run workflow" no GitHub)
+  workflow_dispatch:
+
+jobs:
+  enviar-email:
+    runs-on: ubuntu-latest  # Usa um computador Linux gratuito do GitHub
+
+    steps:
+      # Passo 1: Baixa os arquivos do repositório para o computador do GitHub
+      - name: Baixar arquivos do repositório
+        uses: actions/checkout@v4
+
+      # Passo 2: Instala o Python no computador do GitHub
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Passo 3: Instala as bibliotecas que o script.py precisa (listadas em requirements.txt)
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      # Passo 4: Executa o script principal, passando os segredos como variáveis de ambiente
+      - name: Executar o Cafezinho
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
+          EMAIL_SENHA: ${{ secrets.EMAIL_SENHA }}
+        run: python script.py
