@@ -24,7 +24,7 @@ from datetime import datetime
 def gerar_conteudo_ia():
     # Pega a chave secreta do Gemini guardada no GitHub
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     # Instruções para a IA — diz exatamente o que ela deve gerar
     prompt = """Você é um especialista em seguros de vida coletivo PJ no Brasil, com profundo conhecimento técnico, regulatório e de mercado.
