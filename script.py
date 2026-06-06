@@ -21,11 +21,7 @@ from datetime import datetime
 # o Termo do Dia, a Dica Técnica e o Cenário Econômico.
 
 def gerar_conteudo_ia():
-    from google import genai as google_genai
-
-    client = google_genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-    # Instruções para a IA — diz exatamente o que ela deve gerar
+    # Groq é gratuito, sem restrição de região, usa o modelo Llama 3
     prompt = """Você é um especialista em seguros de vida coletivo PJ no Brasil, com profundo conhecimento técnico, regulatório e de mercado.
 
 Gere conteúdo original para o e-mail de hoje do "Cafezinho do Seguro".
@@ -50,11 +46,21 @@ Formato exigido:
   }
 }"""
 
-    resposta = client.models.generate_content(
-        model="gemini-2.0-flash-lite",
-        contents=prompt
+    resposta = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.environ['GROQ_API_KEY']}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.7
+        },
+        timeout=30
     )
-    texto = resposta.text.strip()
+
+    texto = resposta.json()["choices"][0]["message"]["content"].strip()
     # Remove blocos de markdown caso a IA os inclua por engano
     if texto.startswith("```"):
         texto = texto.split("```")[1]
